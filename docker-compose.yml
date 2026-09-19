@@ -1,0 +1,20 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: student-productivity-db
+
+    environment:
+      POSTGRES_DB: student_productivity
+      POSTGRES_USER: student_app
+      POSTGRES_PASSWORD: student_password
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/create_tasks_table.sql:/docker-entrypoint-initdb.d/create_tasks_table.sql
+
+volumes:
+  postgres_data:
