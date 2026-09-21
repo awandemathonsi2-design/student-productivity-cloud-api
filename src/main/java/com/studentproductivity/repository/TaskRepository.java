@@ -37,6 +37,7 @@ public class TaskRepository {
             }
         }
     }
+
     public List<Task> getAllTasks() throws SQLException {
 
         String sql = """
@@ -71,6 +72,33 @@ public class TaskRepository {
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapRowToTask(resultSet));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
+    public Optional<Task> updateTask(int id, String title, String description, boolean completed)
+            throws SQLException {
+
+        String sql = """
+            UPDATE tasks
+            SET title = ?, description = ?, completed = ?
+            WHERE id = ?
+            RETURNING id, title, description, completed
+            """;
+
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, title);
+            statement.setString(2, description);
+            statement.setBoolean(3, completed);
+            statement.setInt(4, id);
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
