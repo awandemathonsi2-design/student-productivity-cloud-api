@@ -109,6 +109,23 @@ public class TaskRepository {
         }
     }
 
+    public boolean deleteTask(int id) throws SQLException {
+
+        String sql = """
+            DELETE FROM tasks
+            WHERE id = ?
+            """;
+
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            int rowsDeleted = statement.executeUpdate();
+            return rowsDeleted > 0;
+        }
+    }
+
     private Task mapRowToTask(ResultSet resultSet) throws SQLException {
         return new Task(
                 resultSet.getInt("id"),
