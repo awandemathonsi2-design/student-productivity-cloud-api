@@ -22,13 +22,14 @@ public class TaskController {
         app.post("/tasks", this::createTask);
         app.get("/tasks", this::getAllTasks);
         app.get("/tasks/{id}", this::getTaskById);
+        app.delete("/tasks/{id}", this::deleteTask);
     }
 
     private void createTask(Context ctx) throws SQLException {
         TaskRequest request = ctx.bodyAsClass(TaskRequest.class);
 
         if (request.getTitle() == null || request.getTitle().isBlank()) {
-            ctx.status(400).json(Map.of("ERROR", "Title is required"));
+            ctx.status(400).json(Map.of("error", "Title is required"));
             return;
         }
 
@@ -47,6 +48,18 @@ public class TaskController {
 
         if (task.isPresent()) {
             ctx.json(task.get());
+        } else {
+            ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
+        }
+    }
+
+    private void deleteTask(Context ctx) throws SQLException {
+        int id = ctx.pathParamAsClass("id", Integer.class).get();
+
+        boolean deleted = repository.deleteTask(id);
+
+        if (deleted) {
+            ctx.status(204);
         } else {
             ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
         }
