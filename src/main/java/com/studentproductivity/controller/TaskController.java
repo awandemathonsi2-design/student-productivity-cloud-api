@@ -8,6 +8,7 @@ import io.javalin.http.Context;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 
 public class TaskController {
 
@@ -20,6 +21,7 @@ public class TaskController {
     public void registerRoutes(Javalin app) {
         app.post("/tasks", this::createTask);
         app.get("/tasks", this::getAllTasks);
+        app.get("/tasks/{id}", this::getTaskById);
     }
 
     private void createTask(Context ctx) throws SQLException {
@@ -36,5 +38,17 @@ public class TaskController {
 
     private void getAllTasks(Context ctx) throws SQLException {
         ctx.json(repository.getAllTasks());
+    }
+
+    private void getTaskById(Context ctx) throws SQLException {
+        int id = ctx.pathParamAsClass("id", Integer.class).get();
+
+        Optional<Task> task = repository.getTaskById(id);
+
+        if (task.isPresent()) {
+            ctx.json(task.get());
+        } else {
+            ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
+        }
     }
 }
