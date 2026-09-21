@@ -7,6 +7,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class TaskRepository {
 
@@ -27,16 +30,63 @@ public class TaskRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next()) {
-                    return new Task(
-                            resultSet.getInt("id"),
-                            resultSet.getString("title"),
-                            resultSet.getString("description"),
-                            resultSet.getBoolean("completed")
-                    );
+                    return mapRowToTask(resultSet);
                 }
 
                 throw new SQLException("Failed to create task");
             }
         }
+    }
+    public List<Task> getAllTasks() throws SQLException {
+
+        String sql = """
+            SELECT id, title, description, completed
+            FROM tasks
+            ORDER BY id
+            """;
+
+        List<Task> tasks = new ArrayList<>();
+
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                tasks.add(mapRowToTask(resultSet));
+            }
+        }
+
+        return tasks;
+    }
+
+    public Optional<Task> getTaskById(int id) throws SQLException {
+
+        String sql = """
+            SELECT id, title, description, completed
+            FROM tasks
+            WHERE id = ?
+            """;
+
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapRowToTask(resultSet));
+                }
+                return Optional.empty();
+            }
+        }
+    }
+
+    private Task mapRowToTask(ResultSet resultSet) throws SQLException {
+        return new Task(
+                resultSet.getInt("id"),
+                resultSet.getString("title"),
+                resultSet.getString("description"),
+                resultSet.getBoolean("completed")
+        );
     }
 }
