@@ -5,18 +5,11 @@ import com.studentproductivity.database.DatabaseConfig;
 import com.studentproductivity.repository.TaskRepository;
 import io.javalin.Javalin;
 
-import java.sql.Connection;
-
 public class Main {
 
     public static void main(String[] args) {
 
-        try (Connection connection = DatabaseConfig.getConnection()) {
-            System.out.println("Database connection successful!");
-        } catch (Exception e) {
-            System.out.println("Database connection failed!");
-            e.printStackTrace();
-        }
+        DatabaseConfig.initSchema();
 
         TaskRepository repository = new TaskRepository();
         TaskController controller = new TaskController(repository);
