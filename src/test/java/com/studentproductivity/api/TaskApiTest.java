@@ -1,4 +1,4 @@
-package com.studentproductivity.repository;
+package com.studentproductivity.api;
 
 import com.studentproductivity.Main;
 import io.javalin.Javalin;
