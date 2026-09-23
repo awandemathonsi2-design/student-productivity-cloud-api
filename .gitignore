@@ -27,3 +27,6 @@ replay_pid*
 target/
 .env
 
+
+dependency-reduced-pom.xml
+
