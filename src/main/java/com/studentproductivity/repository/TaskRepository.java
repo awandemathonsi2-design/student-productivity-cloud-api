@@ -11,8 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Handles all SQL for the {@code tasks} table. This is the only class in the
+ * project that talks directly to the database. Controllers and the rest of
+ * the app go through this class instead of writing SQL themselves, which
+ * keeps database logic in one place.
+ */
 public class TaskRepository {
 
+    /** Inserts a new task and returns it with its database-generated id. */
     public Task createTask(String title, String description) throws SQLException {
 
         String sql = """
@@ -38,6 +45,7 @@ public class TaskRepository {
         }
     }
 
+    /** Returns every task in the database, ordered by id. */
     public List<Task> getAllTasks() throws SQLException {
 
         String sql = """
@@ -60,6 +68,7 @@ public class TaskRepository {
         return tasks;
     }
 
+    /** Looks up a single task by its id. */
     public Optional<Task> getTaskById(int id) throws SQLException {
 
         String sql = """
@@ -82,6 +91,7 @@ public class TaskRepository {
         }
     }
 
+    /** Replaces a task's title, description and completed status. */
     public Optional<Task> updateTask(int id, String title, String description, boolean completed)
             throws SQLException {
 
@@ -109,6 +119,7 @@ public class TaskRepository {
         }
     }
 
+    /** Deletes a task by id. */
     public boolean deleteTask(int id) throws SQLException {
 
         String sql = """
@@ -126,6 +137,7 @@ public class TaskRepository {
         }
     }
 
+    /** Converts one row of a {@link ResultSet} into a {@link Task}. */
     private Task mapRowToTask(ResultSet resultSet) throws SQLException {
         return new Task(
                 resultSet.getInt("id"),

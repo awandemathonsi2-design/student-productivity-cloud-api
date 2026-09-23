@@ -10,6 +10,11 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Defines the HTTP routes for {@code /tasks} and translates between HTTP
+ * (status codes, JSON) and the {@link TaskRepository}. Validation of client
+ * input happens here, before the repository is ever called.
+ */
 public class TaskController {
 
     private final TaskRepository repository;
@@ -18,6 +23,7 @@ public class TaskController {
         this.repository = repository;
     }
 
+    /** Registers every /tasks route on the given Javalin app. */
     public void registerRoutes(Javalin app) {
         app.post("/tasks", this::createTask);
         app.get("/tasks", this::getAllTasks);
@@ -26,6 +32,7 @@ public class TaskController {
         app.put("/tasks/{id}", this::updateTask);
     }
 
+    /** Handles POST /tasks: validates the title, then creates the task. */
     private void createTask(Context ctx) throws SQLException {
         TaskRequest request = ctx.bodyAsClass(TaskRequest.class);
 
@@ -38,10 +45,12 @@ public class TaskController {
         ctx.status(201).json(task);
     }
 
+    /** Handles GET /tasks: returns every task as a JSON array. */
     private void getAllTasks(Context ctx) throws SQLException {
         ctx.json(repository.getAllTasks());
     }
 
+    /** Handles GET /tasks/{id}: returns one task, or 404 if it doesn't exist. */
     private void getTaskById(Context ctx) throws SQLException {
         int id = ctx.pathParamAsClass("id", Integer.class).get();
 
@@ -54,18 +63,10 @@ public class TaskController {
         }
     }
 
-    private void deleteTask(Context ctx) throws SQLException {
-        int id = ctx.pathParamAsClass("id", Integer.class).get();
-
-        boolean deleted = repository.deleteTask(id);
-
-        if (deleted) {
-            ctx.status(204);
-        } else {
-            ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
-        }
-    }
-
+    /**
+     * Handles PUT /tasks/{id}. If the request omits {@code completed}, the
+     * task's current completed value is kept rather than reset to false.
+     */
     private void updateTask(Context ctx) throws SQLException {
         int id = ctx.pathParamAsClass("id", Integer.class).get();
         TaskRequest request = ctx.bodyAsClass(TaskRequest.class);
@@ -94,6 +95,19 @@ public class TaskController {
 
         if (updated.isPresent()) {
             ctx.json(updated.get());
+        } else {
+            ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
+        }
+    }
+
+    /** Handles DELETE /tasks/{id}: deletes the task, or returns 404 if it doesn't exist. */
+    private void deleteTask(Context ctx) throws SQLException {
+        int id = ctx.pathParamAsClass("id", Integer.class).get();
+
+        boolean deleted = repository.deleteTask(id);
+
+        if (deleted) {
+            ctx.status(204);
         } else {
             ctx.status(404).json(Map.of("ERROR", "Task " + id + " not found"));
         }
