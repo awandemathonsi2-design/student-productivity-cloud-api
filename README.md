@@ -160,4 +160,5 @@ Real AWS credentials are set as environment variables on the server and are neve
 - Running the app as a systemd service is what lets it survive a closed SSH session and restart if the server reboots.
 
 ## Demo Video
-Link: 
+Link:
+https://youtu.be/bf5nFtaxPRc
